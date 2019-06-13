@@ -14,6 +14,16 @@ import core.*;
  * often than 1/s, constant scanning is assumed (and power consumption does not
  * increase from {@link #scanEnergy} value).
  */
+
+/* Oq devemos fazer:
+ * 		Recarga de energia do dispositivo a cada X segundos;
+ * 		Definição de energia inicial do dispositivo; (já vem feito)
+ * 		Atualização da energia gasta com o escaneamento da rede; (ok)
+ * 		Atualização da energia gasta com operação de envio e recebimento de mensagens. (ok)
+ * 
+ * 		DESENVOLVER
+ * 			carregamento
+ * */
 public class EnergyModel implements ModuleCommunicationListener {
 	/** Initial units of energy -setting id ({@value}). Can be either a
 	 * single value, or a range of two values. In the latter case, the used
@@ -38,26 +48,78 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * {@link report.Report#WARMUP_S} from the namespace
 	 * {@value report.Report#REPORT_NS}. */
 	public static final String WARMUP_S = "energyWarmup";
-
+	
 	/** {@link ModuleCommunicationBus} identifier for the "current amount of
 	 * energy left" variable. Value type: double */
 	public static final String ENERGY_VALUE_ID = "Energy.value";
+	
+	//MINHAS ALTERAÇÕES
+	/** É o tempo de simulação necessário para o dispositivo carregar completamente
+	 * -setting id({@value})  */
+	public static final String RECHARGE_T = "rechargeTime";
+	
+	/** É o período com o qual o usuario coloca seu dispositivo para carregar */
+	public static final String INTERVALO_CARGA = "rechargeInterval";
+	
+	/** É o nivel de bateria em que o usuário para de participar da comunicação	 
+	 * -setting id({@value}) */
+	public static final String NIVEL_CRITICO = "nivelCritico";
+	
+	/** é o consumo base do dispositivo do usuário -setting id({@value}) */
+	public static final String CONSUMO = "consumo";
+	//TERMINA AQUI
 
 	/** Initial energy levels from the settings */
 	private final double[] initEnergy;
 	private double warmupTime;
+	
 	/** current energy level */
 	private double currentEnergy;
+	
 	/** energy usage per scan */
 	private double scanEnergy;
+	
 	/** energy usage per transmitted byte */
 	private double transmitEnergy;
+	
 	/** energy usage per device discovery response */
 	private double scanResponseEnergy;
+	
 	/** sim time of the last energy updated */
 	private double lastUpdate;
+	
 	private ModuleCommunicationBus comBus;
 	private static Random rng = null;
+	
+	//MINHAS ALTERAÇÕES
+	/** tempo necessário para a carga total do dispositivo	0~100% */
+	private Double rechargeTime;
+	
+	/** quantidade de bateria por unidade de tempo (i.e) 1% de bateria a cada 10 seg*/
+	private Double rechargeRatio; //quantidade de energia que o dispositivo ganha por seg
+	
+	/** flag para indicar que o dispositivo está funcionando plugado na tomada */
+	private boolean isCarregando;
+	
+	/** marca o tempo de simulação em que o dispositivo atingiu zero de bateria */
+	private Double timeEmpty;
+	
+	/** marca o nivel de bateria que o usuário considera critico, ou seja, o nivel em que a bateria deve
+	 * ser salva, caso esteja abaixo o usuario não troca mensagens */
+	private int nivelCritico;
+	
+	/** marca o consumo de bateria do disposito por unidade de tempo, ex: um dispositivo x consome 3% 
+	 * por hora*/
+	private Double consumo;
+	
+	/** de quanto em quanto tempo o usuario da uma carga total*/
+	private Double intevaloCarga;
+	
+	/** momento em que o nivel de bateria foi checado pela ultima vez*/
+	private Double checaBateria;
+	
+	private boolean isCritico;
+	// FIM ALTERAÇÕES
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -72,10 +134,19 @@ public class EnergyModel implements ModuleCommunicationListener {
 					"either a single value or two comma separated values");
 		}
 
+		// é a quantidade de bateria que essas atividades consumem do dispositivo
 		this.scanEnergy = s.getDouble(SCAN_ENERGY_S);
 		this.transmitEnergy = s.getDouble(TRANSMIT_ENERGY_S);
 		this.scanResponseEnergy = s.getDouble(SCAN_RSP_ENERGY_S);
+		
+		//ALTERAÇÕES
+		this.rechargeTime = s.getDouble(RECHARGE_T);
+		this.intevaloCarga = s.getDouble(INTERVALO_CARGA);
+		this.nivelCritico = s.getInt(NIVEL_CRITICO);
+		this.consumo = s.getDouble(CONSUMO);
+		//FIM ALTERAÇÕES
 
+		//é o tempo de simulação em que a bateria pode começar a comer
 		if (s.contains(WARMUP_S)) {
 			this.warmupTime = s.getInt(WARMUP_S);
 			if (this.warmupTime == -1) {
@@ -101,6 +172,29 @@ public class EnergyModel implements ModuleCommunicationListener {
 		this.scanResponseEnergy = proto.scanResponseEnergy;
 		this.comBus = null;
 		this.lastUpdate = 0;
+		this.checaBateria = SimClock.getTime();
+		
+		
+		//ALTEREI
+		this.nivelCritico = proto.nivelCritico;
+		this.consumo = proto.consumo;
+		this.intevaloCarga = proto.intevaloCarga;		
+		this.rechargeRatio = this.rechargeTime/100.00;
+		
+		if(this.getEnergy() <= this.nivelCritico) {
+			this.isCritico = true;
+		}else {
+			this.isCritico = false;
+		}
+		
+		if(this.getEnergy() == 0.0) {
+			this.isCarregando = true;
+			this.timeEmpty = SimClock.getTime();
+		}else {
+			this.isCarregando = false;
+			this.timeEmpty = null;
+		}
+		
 	}
 
 	public EnergyModel replicate() {
@@ -114,16 +208,40 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * is given, that is used as the energy level
 	 */
 	protected void setEnergy(double range[]) {
-		if (range.length == 1) {
+		if (range.length == 1) { //foi dado um valor direto para ser a qntd inicial de bateria
 			this.currentEnergy = range[0];
+			System.out.printf("%d", (int)range[0]);
 		}
 		else {
 			if (rng == null) {
 				rng = new Random((int)(range[0] + range[1]));
+				System.out.printf("%d", rng);
 			}
 			this.currentEnergy = range[0] +
 				rng.nextDouble() * (range[1] - range[0]);
+				System.out.printf("%.2lf", rng);
 		}
+	}
+	/** simula o consumo da bateria tendo em vista seu consumo natural com base em outros aplicativos
+	 *  ou do proprio sistema, toda vez que alguma função for checar o estado da bateria vamos 
+	 *  levar em conta o passar do tempo e consequentemente seu consumo
+	 * */
+	public void simulaConsumo() {	
+		Double tempoDecorrido = this.checaBateria - SimClock.getTime();
+		Double bateriaAtual = tempoDecorrido * this.consumo;
+		this.checaBateria = SimClock.getTime();
+		
+		if (bateriaAtual <= 0) {
+			this.currentEnergy = 0.0;
+			this.isCritico = true;
+		}else {
+			this.currentEnergy = bateriaAtual;
+			if (bateriaAtual <= this.nivelCritico) {
+				this.isCritico = true;
+			}else {
+				this.isCritico = false;
+			}
+		}	
 	}
 
 	/**
@@ -131,6 +249,7 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * @return the current energy level
 	 */
 	public double getEnergy() {
+		simulaConsumo();
 		return this.currentEnergy;
 	}
 
@@ -148,13 +267,15 @@ public class EnergyModel implements ModuleCommunicationListener {
 		if (comBus == null) {
 			return; /* model not initialized (via update) yet */
 		}
-
+		
+		simulaConsumo();
 		if (amount >= this.currentEnergy) {
-			comBus.updateProperty(ENERGY_VALUE_ID, 0.0);
-		} else {
+			comBus.updateProperty(ENERGY_VALUE_ID, 0.0);	
+			this.currentEnergy = 0.0;
+		} else {			
 			comBus.updateDouble(ENERGY_VALUE_ID, -amount);
+			this.currentEnergy = this.currentEnergy - amount;
 		}
-
 	}
 
 	/**
@@ -162,6 +283,7 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * host connects (does device discovery)
 	 */
 	public void reduceDiscoveryEnergy() {
+		simulaConsumo();
 		reduceEnergy(this.scanResponseEnergy);
 	}
 
@@ -170,6 +292,7 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * and scanning for the other nodes.
 	 */
 	public void update(NetworkInterface iface, ModuleCommunicationBus comBus) {
+		simulaConsumo();
 		double simTime = SimClock.getTime();
 		double delta = simTime - this.lastUpdate;
 
@@ -178,7 +301,11 @@ public class EnergyModel implements ModuleCommunicationListener {
 			this.comBus.addProperty(ENERGY_VALUE_ID, this.currentEnergy);
 			this.comBus.subscribe(ENERGY_VALUE_ID, this);
 		}
-
+		//o dispositivo está em um nivel critico, portanto não participará da comunicação
+		if(this.isCritico) {
+			this.lastUpdate = simTime;
+			return;
+		}
 		if (simTime > this.lastUpdate && iface.isTransferring()) {
 			/* sending or receiving data */
 			reduceEnergy(delta * this.transmitEnergy);

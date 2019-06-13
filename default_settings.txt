@@ -50,7 +50,7 @@ Scenario.nrofHostGroups = 6
 # routeType: route's type - for MapRouteMovement
 
 
-# Common settings for all groups
+# Common settings for all groups <-----tentando colocar o modulo de bateria
 Group.movementModel = ShortestPathMapBasedMovement
 Group.router = EpidemicRouter
 Group.bufferSize = 5M
@@ -62,6 +62,8 @@ Group.interface1 = btInterface
 Group.speed = 0.5, 1.5
 # Message TTL of 300 minutes (5 hours)
 Group.msgTtl = 300
+
+
 
 Group.nrofHosts = 40
 

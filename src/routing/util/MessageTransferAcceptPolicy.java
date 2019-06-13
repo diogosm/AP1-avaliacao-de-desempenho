@@ -20,6 +20,7 @@ import core.Settings;
  * <P> Message transfer accepting policy module. Can be used to decide whether
  * certain messages should be accepted or not. Shared by a whole node group, but
  * uses the module communication bus of each node in question.</P>
+ * 
  * <P> Supports 3 different modes: "simple policy", Hop Count, and
  * ModuleCommunicationBus (MCB) values. With simple policy, hosts that are
  * accepted as the source of a message (i.e., the original message sender) when
@@ -28,12 +29,14 @@ import core.Settings;
  * (when sending, using {@link #FROM_SPOLICY_S}) and hosts that are accepted as
  * the destination when receiving are listed using {@link #TO_RPOLICY_S}
  * (and when sending, using {@link #TO_SPOLICY_S}). By default, any message is
- * accepted. </P> <P>
- * With ModuleCommunicationBus values, the amount of conditions is first defined
+ * accepted. </P> 
+ * 
+ * <P> With ModuleCommunicationBus values, the amount of conditions is first defined
  * with {@link #NROF_MCBCS_S} and sending/receiving conditions are defined
  * as {@link ArithmeticCondition} with {@link #MCBACS_S} or {@link #MCBACR_S}
  * and the ModuleCommuncationBus IDs where to get values from to use with the
  * condition with {@link #MCBCVS_S} and {@link #MCBCVR_S}.</P>
+ * 
  * <P>The MCB conditions are checked first, and if none of them match,
  * simple policy conditions are checked. If they don't exists,
  * or one of them matches, hop count policy is checked. If that doesn't exist
