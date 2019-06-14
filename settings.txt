@@ -1,0 +1,7 @@
+EventsX.class = MessageMulticastEventGenerator
+EventsX.interval = 0,60
+EventsX.size = 1M,5M
+EventsX.hosts = 0,100
+EventsX.tohosts = 0,25
+EventsX.prefix = Message
+EventsX.numdestinos = 10
