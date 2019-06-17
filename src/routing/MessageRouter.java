@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import core.Debug;
 import core.Application;
 import core.Connection;
 import core.DTNHost;
@@ -382,7 +383,7 @@ public abstract class MessageRouter {
 		Message aMessage = (outgoing==null)?(incoming):(outgoing);
 		// If the application re-targets the message (changes 'to')
 		// then the message is not considered as 'delivered' to this host.
-		isFinalRecipient = aMessage.getTo() == this.host;
+		isFinalRecipient = true;
 		isFirstDelivery = isFinalRecipient &&
 		!isDeliveredMessage(aMessage);
 
@@ -390,8 +391,9 @@ public abstract class MessageRouter {
 			// not the final recipient and app doesn't want to drop the message
 			// -> put to buffer
 			addToMessages(aMessage, false);
-		} else if (isFirstDelivery) {
 			this.deliveredMessages.put(id, aMessage);
+			System.out.println(id);
+		} else if (isFirstDelivery) {
 		} else if (outgoing == null) {
 			// Blacklist messages that an app wants to drop.
 			// Otherwise the peer will just try to send it back again.
