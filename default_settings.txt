@@ -62,6 +62,9 @@ Group.interface1 = btInterface
 Group.speed = 0.5, 1.5
 # Message TTL of 300 minutes (5 hours)
 Group.msgTtl = 300
+# KClique
+Group.K = 2
+Group.familiarThreshold = 2
 
 Group.nrofHosts = 40
 
