@@ -105,6 +105,7 @@ public abstract class MessageRouter {
 	/** applications attached to the host */
 	private HashMap<String, Collection<Application>> applications = null;
 
+	private ArrayList<Integer> MessageList
 	/**
 	 * Constructor. Creates a new message router based on the settings in
 	 * the given Settings object. Size of the message buffer is read from

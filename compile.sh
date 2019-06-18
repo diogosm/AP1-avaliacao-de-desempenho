@@ -6,3 +6,4 @@ javac -sourcepath src -d $targetdir -extdirs lib/ src/core/*.java src/movement/*
 
 if [ ! -d "$targetdir/gui/buttonGraphics" ]; then cp -R src/gui/buttonGraphics target/gui/; fi
 	
+
