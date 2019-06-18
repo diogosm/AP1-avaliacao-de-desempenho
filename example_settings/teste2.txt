@@ -1,0 +1,8 @@
+Scenario.name = testeScenario
+
+DecisionEngineRouter.decisionEngine = DistributedBubbleRap
+DecisionEngineRouter.communityDetectAlg = routing.community.KCliqueCommunityDetection
+DecisionEngineRouter.K = 2
+DecisionEngineRouter.familiarThreshold = 200
+DecisionEngineRouter.centralityAlg = routing.community.CWindowCentrality
+

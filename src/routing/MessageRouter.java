@@ -84,26 +84,26 @@ public abstract class MessageRouter {
 	/** Maximum Ttl value */
 	public static final int MAX_TTL_VALUE = 35791394;
 
-	private List<MessageListener> mListeners;
+	public List<MessageListener> mListeners;
 	/** The messages being transferred with msgID_hostName keys */
-	private HashMap<String, Message> incomingMessages;
+	public HashMap<String, Message> incomingMessages;
 	/** The messages this router is carrying */
-	private HashMap<String, Message> messages;
+	public HashMap<String, Message> messages;
 	/** The messages this router has received as the final recipient */
-	private HashMap<String, Message> deliveredMessages;
+	public HashMap<String, Message> deliveredMessages;
 	/** The messages that Applications on this router have blacklisted */
-	private HashMap<String, Object> blacklistedMessages;
+	public HashMap<String, Object> blacklistedMessages;
 	/** Host where this router belongs to */
-	private DTNHost host;
+	public DTNHost host;
 	/** size of the buffer */
-	private long bufferSize;
+	public long bufferSize;
 	/** TTL for all messages */
 	protected int msgTtl;
 	/** Queue mode for sending messages */
-	private int sendQueueMode;
+	public int sendQueueMode;
 
 	/** applications attached to the host */
-	private HashMap<String, Collection<Application>> applications = null;
+	public HashMap<String, Collection<Application>> applications = null;
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
