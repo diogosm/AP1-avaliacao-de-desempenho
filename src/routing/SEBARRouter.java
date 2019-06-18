@@ -24,10 +24,14 @@ public class SEBARRouter extends ActiveRouter {
 
 	public SEBARRouter(Settings s) {
 		super(s);
+        this.comunidade = new KCliqueCommunityDetection(s);
+        this.centralidade = new CWindowCentrality(s);
 	}
 
 	protected SEBARRouter(SEBARRouter r) {
 		super(r);
+        this.comunidade = r.comunidade;
+        this.centralidade = r.centralidade;
 	}
 
     private double calculoEnk(DTNHost peer) {
