@@ -1,9 +1,6 @@
 # Compiled files
 *.class
 
-# Simulation report files
-*reports*/*.txt
-
 # Javadocs
 *.html
 doc/stylesheet.css
