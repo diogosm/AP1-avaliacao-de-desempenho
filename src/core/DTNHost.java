@@ -30,7 +30,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	private Path path;
 	private double speed;
 	private double nextTimeToMove;
-	private String name;
+	public String name;
 	private List<MessageListener> msgListeners;
 	private List<MovementListener> movListeners;
 	private List<NetworkInterface> net;

@@ -4,13 +4,8 @@
  */
 package routing;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
 import core.Application;
 import core.Connection;
 import core.DTNHost;
@@ -105,7 +100,7 @@ public abstract class MessageRouter {
 	/** applications attached to the host */
 	private HashMap<String, Collection<Application>> applications = null;
 
-	private ArrayList<Integer> MessageList
+	private ArrayList<String> messageList;
 	/**
 	 * Constructor. Creates a new message router based on the settings in
 	 * the given Settings object. Size of the message buffer is read from
@@ -166,6 +161,7 @@ public abstract class MessageRouter {
 		this.blacklistedMessages = new HashMap<String, Object>();
 		this.mListeners = mListeners;
 		this.host = host;
+		this.messageList = new ArrayList<String>();
 	}
 
 	/**
@@ -446,13 +442,28 @@ public abstract class MessageRouter {
 	 * message, if false, nothing is informed.
 	 */
 	protected void addToMessages(Message m, boolean newMessage) {
-		this.messages.put(m.getId(), m);
+		if (!this.checkMessageList(m)) {
+			this.messages.put(m.getId(), m);
 
-		if (newMessage) {
-			for (MessageListener ml : this.mListeners) {
-				ml.newMessage(m);
+			if (newMessage) {
+				for (MessageListener ml : this.mListeners) {
+					ml.newMessage(m);
+				}
 			}
 		}
+	}
+
+	private boolean checkMessageList(Message m) {
+		boolean isMessageInMessageList = false;
+		if (this.messageList != null) {
+			for (int i = 0; i < this.messageList.size(); i++) {
+				if (this.messageList.get(i).equals(m.getId())) {
+					isMessageInMessageList = true;
+				}
+			}
+		}
+
+		return isMessageInMessageList;
 	}
 
 	/**
@@ -513,6 +524,7 @@ public abstract class MessageRouter {
 		for (MessageListener ml : this.mListeners) {
 			ml.messageDeleted(removed, this.host, drop);
 		}
+		this.messageList.add(removed.getId());
 	}
 
 	/**
