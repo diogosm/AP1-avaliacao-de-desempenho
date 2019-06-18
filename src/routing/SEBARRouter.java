@@ -57,6 +57,25 @@ public class SEBARRouter extends ActiveRouter {
 		if (exchangeDeliverableMessages() != null) {
 			return; // started a transfer
 		}
+
+        // SEBAR Algorithm
+        for (Connection c : getConnections()) {
+            for (Message m : getMessageCollection()) {
+                if (m.getTo() == c.getOtherNode(getHost())) {
+                    startTransfer(m, c);
+                    this.deleteMessage(c.getMessage().getId(), false);
+                } else if (m.getHops().contains(m.getTo())) {
+                    continue;
+                } else if (comunidade.isHostInCommunity(m.getTo()) &&
+                           calculoEk(getHost()) < calculoEk(m.getTo())) {
+                    startTransfer(m, c);
+                } else if (comunidade.isHostInCommunity(getHost()) &&
+                           comunidade.isHostInCommunity(m.getTo()) &&
+                           calculoEck(getHost()) < calculoEck(m.getTo())) {
+                    startTransfer(m, c);
+                }
+            }
+        }
 	}
 
 	@Override
