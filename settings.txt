@@ -1,7 +1,18 @@
-EventsX.class = MessageMulticastEventGenerator
-EventsX.interval = 0,60
-EventsX.size = 1M,5M
-EventsX.hosts = 0,100
-EventsX.tohosts = 0,25
-EventsX.prefix = Message
-EventsX.numdestinos = 10
+## Message creation parameters
+# How many event generators
+Events.nrof = 1
+# Class of the first event generator
+Events1.class = MessageEventGenerator
+# (following settings are specific for the MessageEventGenerator class)
+# Creation interval in seconds (one new message every 25 to 35 seconds)
+Events1.interval = 25,35
+# Message sizes (500kB - 1MB)
+Events1.size = 500k,1M
+# range of message source/destination addresses
+Events1.hosts = 0,126
+# Message ID prefix
+Events1.prefix = M 
+
+
+Events1.tohosts = 0,25
+Events1.numdestinos = 10

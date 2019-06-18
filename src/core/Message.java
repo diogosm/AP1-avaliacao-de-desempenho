@@ -46,6 +46,8 @@ public class Message implements Comparable<Message> {
 	 * copy of the properties is made when replicating messages */
 	private Map<String, Object> properties;
 
+	private ArrayList<DTNHost> receivArrayList;
+
 	/** Application ID of the application that created the message */
 	private String	appID;
 
@@ -80,6 +82,46 @@ public class Message implements Comparable<Message> {
 
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
+	}
+
+	public Message(DTNHost from, DTNHost to, String id, int size, ArrayList<DTNHost> receivArrayList) {
+		this.from = from;
+		this.to = to;
+		this.id = id;
+		this.size = size;
+		this.receivArrayList = new ArrayList<>();
+		
+		this.path = new ArrayList<DTNHost>();
+		this.uniqueId = nextUniqueId;
+
+		this.timeCreated = SimClock.getTime();
+		this.timeReceived = this.timeCreated;
+		this.initTtl = INFINITE_TTL;
+		this.responseSize = 0;
+		this.requestMsg = null;
+		this.properties = null;
+		this.appID = null;
+
+		Message.nextUniqueId++;
+		addNodeOnPath(from);
+	}
+
+
+	public ArrayList<DTNHost> getReceivArrayList(){
+		try{
+			System.out.println("oi");
+			System.out.println(this.receivArrayList.toString());
+			return this.receivArrayList;
+		} catch(Exception e){
+			System.out.println("oi");
+			System.out.println(e.toString());
+			return null;
+		}
+		
+	}
+
+	public void setReceivArrayList(ArrayList<DTNHost> receivArrayList){
+		this.receivArrayList = receivArrayList;
 	}
 
 	/**
