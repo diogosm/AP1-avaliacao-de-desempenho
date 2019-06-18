@@ -230,7 +230,8 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	 */
 	public boolean isActive() {
 		boolean active;
-
+		
+		//System.out.printf("%f", this.toString());
 		if (ah == null) {
 			return true; /* no handler: always active */
 		}

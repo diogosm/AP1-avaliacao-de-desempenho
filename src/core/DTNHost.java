@@ -34,7 +34,9 @@ public class DTNHost implements Comparable<DTNHost> {
 	private List<MessageListener> msgListeners;
 	private List<MovementListener> movListeners;
 	private List<NetworkInterface> net;
+	private List<NetworkInterface> netSafe;
 	private ModuleCommunicationBus comBus;
+	private boolean isDead;
 
 	static {
 		DTNSim.registerForReset(DTNHost.class.getCanonicalName());
@@ -66,6 +68,8 @@ public class DTNHost implements Comparable<DTNHost> {
 			ni.setHost(this);
 			net.add(ni);
 		}
+		netSafe = net;
+		isDead = false;
 
 		// TODO - think about the names of the interfaces and the nodes
 		//this.name = groupId + ((NetworkInterface)net.get(1)).getAddress();
@@ -103,7 +107,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	/**
 	 * Reset the host and its interfaces
 	 */
-	public static void reset() {
+	public static void reset() { //USAR PARA CHAMAR O NÓ DEVOLTA?
 		nextAddress = 0;
 	}
 
@@ -332,17 +336,34 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param simulateConnections Should network layer be updated too
 	 */
 	public void update(boolean simulateConnections) {
+		//desativando o nó
 		if (!isRadioActive()) {
-			// Make sure inactive nodes don't have connections
+			// Make sure inactive nodes don't have connections		
 			tearDownAllConnections();
+			//this.isDead = true;
 			return;
 		}
-
+		/*
+		//se o nó já ta morto, vou tentar religar ele
+		if(this.isDead) {
+			this.net = this.netSafe;
+			System.out.printf("%d\n",isRadioActive());
+		}
+		*/
+		
+		//checa o tempo da recarga, seta a recarga e ativa as conexões
+		//System.out.printf("Nome: %s\n",this.toString());
+		//System.out.printf("Adress: %d\n",this.getAddress());
+		
+		//this.net = this.netSafe;
+		//isRadioActive();
+		
 		if (simulateConnections) {
 			for (NetworkInterface i : net) {
 				i.update();
 			}
 		}
+		
 		this.router.update();
 	}
 

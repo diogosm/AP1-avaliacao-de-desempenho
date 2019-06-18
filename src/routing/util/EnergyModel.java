@@ -23,6 +23,12 @@ import core.*;
  * 
  * 		DESENVOLVER
  * 			carregamento
+ * 
+ * o modelo de energia é uma expansão, ele não está "dentro" do nó		
+ * usar o combus
+ * 		a inicialização das variaveis se dá por meio do group
+ * 		dtnhost para comunicar de fora
+ * 		pôr um if no modulevaluechanged, o combus fica chamando ele
  * */
 public class EnergyModel implements ModuleCommunicationListener {
 	/** Initial units of energy -setting id ({@value}). Can be either a
@@ -63,10 +69,10 @@ public class EnergyModel implements ModuleCommunicationListener {
 	
 	/** É o nivel de bateria em que o usuário para de participar da comunicação	 
 	 * -setting id({@value}) */
-	//public static final String NIVEL_CRITICO = "nivelCritico";
+	public static final String NIVEL_CRITICO = "nivelCritico";
 	
 	/** é o consumo base do dispositivo do usuário -setting id({@value}) */
-	//public static final String CONSUMO = "consumo";
+	public static final String CONSUMO = "consumo";
 	//TERMINA AQUI
 
 	/** Initial energy levels from the settings */
@@ -102,15 +108,19 @@ public class EnergyModel implements ModuleCommunicationListener {
 	//private boolean isCarregando;
 	
 	/** marca o tempo de simulação em que o dispositivo atingiu zero de bateria */
-	//private Double timeEmpty;
+	private Double timeEmpty;
 	
 	/** marca o nivel de bateria que o usuário considera critico, ou seja, o nivel em que a bateria deve
 	 * ser salva, caso esteja abaixo o usuario não troca mensagens */
-	//private int nivelCritico;
+	private Double nivelCritico;
 	
 	/** marca o consumo de bateria do disposito por unidade de tempo, ex: um dispositivo x consome 3% 
 	 * por hora*/
-	//private Double consumo;
+	private Double consumo;
+	
+	/** marca o tempo em que a bateria do dispositivo foi checada pela ultima vez
+	 */
+	private Double checaBateria;
 	
 	/** de quanto em quanto tempo o usuario da uma carga total*/
 	private Double intevaloCarga;
@@ -142,8 +152,8 @@ public class EnergyModel implements ModuleCommunicationListener {
 		//ALTERAÇÕES
 		//this.rechargeTime = s.getDouble(RECHARGE_T);
 		this.intevaloCarga = s.getDouble(INTERVALO_CARGA);
-		//this.nivelCritico = s.getInt(NIVEL_CRITICO);
-		//this.consumo = s.getDouble(CONSUMO);
+		this.nivelCritico = s.getDouble(NIVEL_CRITICO);
+		this.consumo = s.getDouble(CONSUMO);
 		//FIM ALTERAÇÕES
 
 		//é o tempo de simulação em que a bateria pode começar a comer
@@ -176,9 +186,10 @@ public class EnergyModel implements ModuleCommunicationListener {
 		
 		
 		//ALTEREI
-		//this.nivelCritico = proto.nivelCritico;
-		//this.consumo = proto.consumo;
-		this.intevaloCarga = proto.intevaloCarga;		
+		this.nivelCritico = proto.nivelCritico;
+		this.consumo = proto.consumo;
+		this.intevaloCarga = proto.intevaloCarga;
+		this.checaBateria = SimClock.getTime();
 		//this.rechargeRatio = this.rechargeTime/100.00;
 		
 		/*
@@ -211,37 +222,53 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 */
 	protected void setEnergy(double range[]) {
 		if (range.length == 1) { //foi dado um valor direto para ser a qntd inicial de bateria
-			this.currentEnergy = range[0];
-			System.out.printf("%d", (int)range[0]);
+			double numAleatorio = Math.random() * 50;
+			//System.out.printf("%f\n", numAleatorio);
+			this.currentEnergy = range[0] - numAleatorio;
+			System.out.printf("%f\n", this.currentEnergy);
 		}
 		else {
 			if (rng == null) {
 				rng = new Random((int)(range[0] + range[1]));
-				System.out.printf("%d", rng);
+				System.out.printf("%d\n", rng);
 			}
 			this.currentEnergy = range[0] +
 				rng.nextDouble() * (range[1] - range[0]);
-				System.out.printf("%.2lf", rng);
+				System.out.printf("%.2lf\n", rng);
 		}
 	}
 	
 	/** simula o consumo da bateria tendo em vista seu consumo natural com base em outros aplicativos
 	 *  ou do proprio sistema, toda vez que alguma função for checar o estado da bateria vamos 
 	 *  levar em conta o passar do tempo e consequentemente seu consumo
-	 * */
-	
-	/*
-	public void simulaConsumo() {	
-		Double tempoDecorrido = this.checaBateria - SimClock.getTime();
-		Double bateriaAtual = tempoDecorrido * this.consumo;
-		this.checaBateria = SimClock.getTime();
+	 * */	
+	public Double simulaConsumo() {
+		//tempo decorrigo desde a uma checagem na bateria
+		Double tempoDecorrido = Math.abs(this.checaBateria - SimClock.getTime());
+		if (tempoDecorrido <= 0.0)
+			tempoDecorrido = 0.0;
+		//marca o quanto consumiu no tempo que decorreu
 		
+		int centena = (int) (tempoDecorrido%100);
+		int dezena = (int) (tempoDecorrido%10);
+		int unidade =(int) (tempoDecorrido%1);
+		tempoDecorrido = (double) (centena + dezena + unidade);
+		
+		Double bateriaAtual =  tempoDecorrido * this.consumo;
+		
+		//System.out.printf("tempo decorrido: %f\n", tempoDecorrido);
+		//System.out.printf("Consumo: %f\n", bateriaAtual);
+		
+		this.checaBateria = SimClock.getTime();
+		return bateriaAtual;
 		//a bateria zerou, logo a recarga inicia
+		
+		//return aux;
+		/*
 		if (bateriaAtual <= 0.0) {
 			this.currentEnergy = 0.0;
 			this.isCritico = true;
 			this.timeEmpty = SimClock.getTime();
-			this.isCarregando = true;
 		}else {
 			this.currentEnergy = bateriaAtual;
 			if (bateriaAtual <= this.nivelCritico) {
@@ -250,8 +277,9 @@ public class EnergyModel implements ModuleCommunicationListener {
 				this.isCritico = false;
 			}
 		}	
+		*/
 	}
-	*/
+	
 	
 	/** Seta a carga do nó para 100% tendo em vista o tempo em que ele foi carregado pela ultima vez
 	 * e o intervalo de tempo com que os usuarios carregam seus dispositivos
@@ -259,14 +287,12 @@ public class EnergyModel implements ModuleCommunicationListener {
 	public void carregamento() {
 		Double tempoAtual = SimClock.getTime();		
 		//qr dizer que o usuário já passou do tempo de carregar sua bateria
-		if(this.cargaBateria + this.intevaloCarga <= tempoAtual) {
-			comBus.updateProperty(ENERGY_VALUE_ID, 100.0);
-			this.currentEnergy = 100.0;
-			this.cargaBateria = tempoAtual;
-			this.isCritico = false;
-		}
+		this.cargaBateria = tempoAtual;
+		this.isCritico = false;
+		//this.currentEnergy = 100.0;
+		//comBus.updateProperty(ENERGY_VALUE_ID, 100.0);
 	}
-
+	
 	/**
 	 * Returns the current energy level
 	 * @return the current energy level
@@ -292,11 +318,9 @@ public class EnergyModel implements ModuleCommunicationListener {
 		}
 		
 		if(this.currentEnergy == 0.0) {
-			this.carregamento();
 			return;
 		}
 		
-		//simulaConsumo();
 		if (amount >= this.currentEnergy) {
 			comBus.updateProperty(ENERGY_VALUE_ID, 0.0);	
 			this.currentEnergy = 0.0;
@@ -331,7 +355,6 @@ public class EnergyModel implements ModuleCommunicationListener {
 			this.comBus.addProperty(ENERGY_VALUE_ID, this.currentEnergy);
 			this.comBus.subscribe(ENERGY_VALUE_ID, this);
 		}
-		
 		/*
 		 //o dispositivo está em um nivel critico, portanto não participará da comunicação
 		if(this.isCritico) {
@@ -363,8 +386,54 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * @param key The energy ID
 	 * @param newValue The new energy value
 	 */
+	
+	//colocar pro cara carregar o celular de x em x tempo ou caso ele atinja nivel critico
 	public void moduleValueChanged(String key, Object newValue) {
-		this.currentEnergy = (Double)newValue;
+		Double novo = (Double)newValue;
+		
+		Double consumiu = this.simulaConsumo();
+		//System.out.printf("nivel novo: %f\n", novo);
+		//System.out.printf("bateria consumida passivamente: %f\n", consumiu);
+		
+		Double nivelAtual = novo - consumiu;
+		//System.out.printf("%.2f\n", nivelAtual);
+		//System.out.printf("Energia Atual: %.2f\n", this.currentEnergy);
+		//System.out.printf("teste: %s\n", Energy.value);
+		
+		Double tempoUltimaCarga = SimClock.getTime() - this.cargaBateria;
+		
+		if(tempoUltimaCarga >= 1000.0) {
+			tempoUltimaCarga = tempoUltimaCarga - 1000.0;
+		}
+		//System.out.printf("Tempo Ultima Carga:%f\n", tempoUltimaCarga);
+		System.out.printf("%f\n", this.currentEnergy);
+		/*
+		if(nivelAtual <= 0.0) {
+			System.out.println("o nó zerou a bateria");
+			//this.currentEnergy = 0.0; //evitar que a bateria negative
+			this.isCritico = true;
+			this.carregamento();
+			this.currentEnergy = 100.0;
+			//this.comBus.subscribe(ENERGY_VALUE_ID, this); //informando o id e o obj
+			//comBus.updateProperty(ENERGY_VALUE_ID, 100.0);
+			//this.carregamento();
+			System.out.printf("Carregando Bateria\n");
+		}else */
+			
+			if(nivelAtual <= this.nivelCritico || tempoUltimaCarga >= this.intevaloCarga) { // teste
+			//this.currentEnergy = 100.0;
+			//comBus.updateProperty(ENERGY_VALUE_ID, 100.0);
+			this.isCritico = true;
+			this.carregamento();
+			//this.currentEnergy = 100.0;
+			comBus.updateProperty(ENERGY_VALUE_ID, 100.0);
+			System.out.println("Carregando Bateria");
+			//isCritico = true;
+		}else {
+			this.currentEnergy = nivelAtual;
+			//comBus.updateProperty(ENERGY_VALUE_ID, 100.0);
+			//comBus.updateProperty(ENERGY_VALUE_ID, nivelAtual);
+		}
 	}
 
 }
