@@ -46,6 +46,13 @@ public class SEBARRouter extends ActiveRouter {
         return 0.7;
     }
 
+    @Override
+    public Message messageTransferred(String id, DTNHost from) {
+        Message m = super.messageTransferred(id, from);
+        comunidade.newConnection(getHost(), m.getTo(), this.comunidade);
+        return m;
+    }
+
 	@Override
 	public void update() {
 		super.update();
