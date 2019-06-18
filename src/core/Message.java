@@ -89,7 +89,9 @@ public class Message implements Comparable<Message> {
 		this.to = to;
 		this.id = id;
 		this.size = size;
-		this.receivArrayList = new ArrayList<>();
+		this.receivArrayList = new ArrayList<DTNHost>();
+		
+		setReceivArrayList(receivArrayList);
 		
 		this.path = new ArrayList<DTNHost>();
 		this.uniqueId = nextUniqueId;
@@ -104,16 +106,14 @@ public class Message implements Comparable<Message> {
 
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
+
 	}
 
 
 	public ArrayList<DTNHost> getReceivArrayList(){
 		try{
-			System.out.println("oi");
-			System.out.println(this.receivArrayList.toString());
 			return this.receivArrayList;
 		} catch(Exception e){
-			System.out.println("oi");
 			System.out.println(e.toString());
 			return null;
 		}
@@ -121,7 +121,9 @@ public class Message implements Comparable<Message> {
 	}
 
 	public void setReceivArrayList(ArrayList<DTNHost> receivArrayList){
-		this.receivArrayList = receivArrayList;
+		for(int i=0; i<receivArrayList.size();i++){
+			this.receivArrayList.add(receivArrayList.get(i));
+		}
 	}
 
 	/**
@@ -138,6 +140,10 @@ public class Message implements Comparable<Message> {
 	 */
 	public DTNHost getTo() {
 		return this.to;
+	}
+
+	public ArrayList<DTNHost> getToArrayList() {
+		return this.receivArrayList;
 	}
 
 	/**

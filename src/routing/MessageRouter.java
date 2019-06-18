@@ -395,25 +395,35 @@ public abstract class MessageRouter {
 		// isFirstDelivery = isFinalRecipient &&
 		// !isDeliveredMessage(aMessage);
 
-		// gambi do multicast
-		Boolean isMulticast = true;
-		System.out.println("EStou fincionando :D");
-		if (isMulticast) {
-			System.out.println("Entrei na bendita");
-			System.out.println(aMessage.toString());
-			System.out.println(aMessage.getReceivArrayList());
+		Boolean isMulticast = false;
 
-			// ArrayList<DTNHost> recivers = aMessage.getReceivArrayList();
-			// System.out.println(recivers.toString());
-			// for (int i = 0; i < recivers.size(); i++) {
-			// 	if (recivers.get(i) == this.host) {
-			// 		// adiciona a mensagem ao buffer
-			// 		addToMessages(aMessage, false);
-			// 		isFinalRecipient = true;
-			// 		isFirstDelivery = isFinalRecipient && !isDeliveredMessage(aMessage);
-			// 		break;
-			// 	}
-			// }
+		if (isMulticast) {
+
+			ArrayList<DTNHost> recivers = aMessage.getReceivArrayList();
+
+			for (int i = 0; i < recivers.size(); i++) {
+				if (recivers.get(i) == this.host) {
+					
+					isFinalRecipient = true;
+					isFirstDelivery = isFinalRecipient && !isDeliveredMessage(aMessage);
+
+					if (!isFinalRecipient && outgoing!=null) {
+						// adiciona a mensagem ao buffer
+						addToMessages(aMessage, false);
+					} else if (isFirstDelivery) {
+						this.deliveredMessages.put(id, aMessage);
+					} else if (outgoing == null) {
+
+						this.blacklistedMessages.put(id, null);
+					}
+				
+					for (MessageListener ml : this.mListeners) {
+						ml.messageTransferred(aMessage, from, this.host,
+								isFirstDelivery);
+					}
+					break;
+				}
+			}
 		} else{
 			isFinalRecipient = aMessage.getTo() == this.host;
 			isFirstDelivery = isFinalRecipient &&

@@ -59,7 +59,6 @@ public class MessageCreateEvent extends MessageEvent {
 			if (settings.contains("numdestinos")) {
 				numdestinos = settings.getInt("numdestinos", numAleatorio);
 			}
-			System.out.println(settings.contains("numdestinos"));
 
 			if (settings.contains("hosts")) {
 				hosts = settings.getCsvInts("hosts");
@@ -71,9 +70,8 @@ public class MessageCreateEvent extends MessageEvent {
 				DTNHost destinationHost = world.getNodeByAddress(destination);
 				destinations.add(destinationHost);
 			}
-			Debug.p(". " +destinations.size());
+		
 			Message m = new Message(from, to, this.id, this.size, destinations);
-			System.out.println(destinations.toString());
 			m.setReceivArrayList(destinations);
 			from.createNewMessage(m);
 
