@@ -9,11 +9,16 @@ import core.Settings;
 import core.Connection;
 import core.Message;
 import core.DTNHost;
+import routing.community.KCliqueCommunityDetection;
+import routing.community.CWindowCentrality;
 
 /**
  * Algoritmo SEBAR: Secure Energy based Ant Routing
  */
 public class SEBARRouter extends ActiveRouter {
+
+    private KCliqueCommunityDetection comunidade;
+    private CWindowCentrality centralidade;
 
 	public SEBARRouter(Settings s) {
 		super(s);
