@@ -6,6 +6,7 @@ package input;
 
 import core.DTNHost;
 import core.Message;
+import core.MessageBroadcast;
 import core.World;
 
 /**
