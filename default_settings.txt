@@ -20,7 +20,7 @@ Scenario.endTime = 43200
 btInterface.type = SimpleBroadcastInterface
 # Transmit speed of 2 Mbps = 250kBps
 btInterface.transmitSpeed = 250k
-btInterface.transmitRange = 1000
+btInterface.transmitRange = 10
 
 # Define 6 different node groups
 Scenario.nrofHostGroups = 1
@@ -61,7 +61,7 @@ Group.msgTtl = 300
 
 
 #todos pedestres
-Group.nrofHosts = 5
+Group.nrofHosts = 40
 Group.groupID = p
 
 ##parametros de bateria
@@ -93,7 +93,7 @@ Events1.interval = 25,35
 # Message sizes (500kB - 1MB)
 Events1.size = 500k,1M
 # range of message source/destination addresses
-Events1.hosts = 0,5
+Events1.hosts = 0, 40
 # Message ID prefix
 Events1.prefix = M
 
