@@ -26,6 +26,17 @@ import core.MessageListener;
 import core.Settings;
 import core.SimClock;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
+
+import java.io.PrintWriter;
+
 /**
  * Event log panel where log entries are displayed.
  */
@@ -288,6 +299,19 @@ public class EventLogPanel extends JPanel
 		else {
 			processEvent(msgRelayCheck, "Message relayed", from, to, m);
 		}
+
+		String a = String.format("%s %s %s %s\n", SimClock.getTime(), to, to.getLocation().getX(), to.getLocation().getY());
+
+		try {
+			Files.write(Paths.get("reports/report.txt"), a.getBytes(), StandardOpenOption.APPEND);
+		}catch (IOException e) {
+			try{
+				PrintWriter writer = new PrintWriter("reports/report.txt", "UTF-8");
+				writer.close();
+			} catch(IOException ex){
+
+			}
+		} 
 	}
 
 	public void newMessage(Message m) {

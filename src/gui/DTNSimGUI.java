@@ -23,6 +23,9 @@ import core.Coord;
 import core.DTNHost;
 import core.SimClock;
 
+import java.lang.ProcessBuilder;
+import java.io.IOException;
+
 /**
  * Graphical User Interface for simulator
  */
@@ -127,6 +130,12 @@ public class DTNSimGUI extends DTNSimUI {
 		if (!simCancelled) { // NOT cancelled -> leave the GUI running
 			JOptionPane.showMessageDialog(getParentFrame(),
 					"Simulation done");
+			try{
+				String[] args = new String[] {"/bin/bash", "-c", "python3 reports/generate_graph.py"};
+				Process proc = new ProcessBuilder(args).start();
+			} catch(IOException ex){
+
+			}
 		}
 		else { // was cancelled -> exit immediately
 			System.exit(0);
