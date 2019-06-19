@@ -128,14 +128,18 @@ public class DTNSimGUI extends DTNSimUI {
 		this.update(true); // force final GUI update
 
 		if (!simCancelled) { // NOT cancelled -> leave the GUI running
-			JOptionPane.showMessageDialog(getParentFrame(),
-					"Simulation done");
+			System.out.println("Executando Script");			
 			try{
 				String[] args = new String[] {"/bin/bash", "-c", "python3 reports/generate_graph.py"};
 				Process proc = new ProcessBuilder(args).start();
+				System.out.println("Foi");			
 			} catch(IOException ex){
-
+				System.out.println("Algo deu errado");
 			}
+
+			JOptionPane.showMessageDialog(getParentFrame(),
+					"Simulation done");
+			
 		}
 		else { // was cancelled -> exit immediately
 			System.exit(0);

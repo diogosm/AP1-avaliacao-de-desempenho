@@ -9,7 +9,7 @@ eixoX, eixoY = [], []
 eX, eY, eZ = [], [], []
 
 pontos = []
-with open('report.txt') as fin:
+with open('reports/report.txt') as fin:
     ind = 0
     for line in fin:
         [time, label, x, y] = line.split(" ")
@@ -23,7 +23,7 @@ neigh = NearestNeighbors(10)
 neigh.fit(samples) 
         
 for p in pontos:
-    z = 1/neigh.kneighbors([p], int(len(pontos)*0.1), return_distance=True)[0].sum()
+    z = 1/neigh.kneighbors([p], 3000, return_distance=True)[0].sum()
     eZ.append(z)
 
 ndata = 10
@@ -51,5 +51,4 @@ plt.colorbar()
 #plt.scatter(x, y, marker = 'o', c = 'b', s = 5, zorder = 10)
 plt.xlim(xmin, xmax)
 plt.ylim(ymin, ymax)
-plt.show()
-plt.savefig('contourMap.png')
+plt.savefig('reports/contourMap.png')
