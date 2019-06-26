@@ -1,0 +1,6 @@
+Group.router = DecisionEngineRouter
+DecisionEngineRouter.decisionEngine = DistributedBubbleRap
+DecisionEngineRouter.communityDetectAlg = routing.community.KCliqueCommunityDetection
+DecisionEngineRouter.K = 5
+DecisionEngineRouter.familiarThreshold = 700
+DecisionEngineRouter.centralityAlg = routing.community.CWindowCentrality
